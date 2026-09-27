@@ -1,6 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 import { BrowserMultiFormatReader } from "@zxing/browser";
+import BottomNav from "./BottomNav";
 
 function SimScreen() {
   const [simNumber, setSimNumber] = useState("");
@@ -35,48 +36,52 @@ function SimScreen() {
 
   // Start barcode scanning
   const startScan = async () => {
-    setCameraOpen(true);
+   setCameraOpen(true);
 
-    try {
-      const devices = await BrowserMultiFormatReader.listVideoInputDevices();
-      if (devices.length === 0) {
-        setMessage("No camera found");
-        return;
-      }
-
-      // Use first available camera
-      scanner.decodeFromVideoDevice(
-        devices[0].deviceId,
-        "video-preview",
-        (result, err) => {
-          if (result) {
-            const cleanValue = result.getText().trim(); // sanitize scanned value
-            console.log("Scanned value:", JSON.stringify(cleanValue));
-            setSimNumber(cleanValue);
-            stopScan();
-          }
-          if (err) {
-            // ignore decode errors while scanning
-          }
-        }
-      );
-    } catch (error) {
-      console.error(error);
-      setMessage("Error starting camera");
+  try {
+    const devices = await BrowserMultiFormatReader.listVideoInputDevices();
+    if (devices.length === 0) {
+      setMessage("No camera found");
+      setCameraOpen(false);
+      return;
     }
-  };
+
+    // Use first available camera
+    scanner.decodeFromVideoDevice(
+      devices[0].deviceId,
+      "video-preview",
+      (result, err) => {
+        if (result) {
+          const cleanValue = result.getText().trim();
+          console.log("Scanned value:", JSON.stringify(cleanValue));
+          setSimNumber(cleanValue);
+          setCameraOpen(false);
+          scanner.reset();
+        }
+        if (err) {
+          // ignore decode errors
+        }
+      }
+    );
+  } catch (error) {
+    console.error(error);
+    setMessage("Error starting camera");
+    setCameraOpen(false);
+  }
+};
+
 
   // Stop scanning
   const stopScan = () => {
     scanner.reset();
-    setCameraOpen(false);
+    setCameraOpen(false); // hide preview + close button
   };
 
   return (
     <div className="w-screen h-screen flex flex-col items-center bg-white px-6 py-6">
       <div className="w-full max-w-sm">
         {/* Logo + Company */}
-        <div className="flex items-center space-x-2 mb-6">
+        <div className="flex items-center justify-center space-x-2 mb-6">
           <img src="/logo.jpg" alt="Logo" className="w-50 h-15" />
         </div>
 
@@ -85,55 +90,59 @@ function SimScreen() {
           className="rounded-xl flex flex-col mb-8 bg-cover bg-center"
           style={{
             backgroundImage: `url('/SimCard.jpg')`,
-            height: "180px",
+            height: "130px",
             width: "100%",
           }}
         >
           <h2 className="text-3xl sm:text-3xl font-bold text-white ml-6 mt-10 mb-12 leading-snug">
-            Plug Into <br />{" "}
+            Plug Into <br />
             <span className="text-blue-400 italic">Smart Living</span>
           </h2>
         </div>
 
         {/* Enter SIM Card */}
         <div className="bg-gray-100 rounded-xl p-6 shadow-sm">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-xl text-center font-medium text-black mb-2">
             Enter SIM
           </label>
           <input
             type="text"
-            placeholder="Enter SIM Number"
+            placeholder=" "
             value={simNumber}
             onChange={(e) => setSimNumber(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-md mb-4 focus:ring-2 focus:ring-blue-400 outline-none"
+            className="w-full px-4 py-2 bg-white text-black border rounded-lg mb-4 focus:ring-2 focus:ring-blue-400 outline-none"
           />
 
-          {/* Camera Button */}
-          <div className="flex justify-center mb-4">
-            {!cameraOpen ? (
-              <button
-                type="button"
-                className="flex flex-col items-center bg-white shadow-md border rounded-xl px-6 py-4 hover:bg-gray-50 transition"
-                onClick={startScan}
-              >
-                <div className="w-10 h-10 bg-blue-100 flex items-center justify-center rounded-lg mb-2">
-                  📷
-                </div>
-                <span className="text-gray-600 text-sm">Open Camera</span>
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={stopScan}
-                className="bg-red-500 text-white px-6 py-2 rounded-md hover:bg-red-600"
-              >
-                Close Camera
-              </button>
-            )}
-          </div>
 
-          {/* Camera Preview + Overlay */}
-          {cameraOpen && (
+          {/* Camera Section */}
+          {!cameraOpen ? (
+            // Camera card (before scanning)
+            <div className="flex items-center mb-3 w-full h-20 bg-white rounded-2xl border shadow-sm p-4">
+              <div
+                onClick={startScan}
+                className="w-14 h-14 bg-cyan-400 rounded-lg flex items-center justify-center cursor-pointer hover:bg-cyan-500 active:scale-95 transition"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={2}
+                  stroke="white"
+                  className="w-6 h-6"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M3 7h2l2-3h10l2 3h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V9a2 2 0 012-2zm9 3a4 4 0 100 8 4 4 0 000-8z"
+                  />
+                </svg>
+              </div>
+              <span className="ml-7 text-gray-600 text-base sm:text-lg font-medium">
+                Open Camera
+              </span>
+            </div>
+          ) : (
+            // Show only video preview while scanning
             <div className="relative w-full flex justify-center">
               <video
                 id="video-preview"
@@ -141,8 +150,6 @@ function SimScreen() {
                 autoPlay
                 muted
               ></video>
-              {/* Overlay for guidance */}
-              {/* <div className="absolute border-4 border-green-400 rounded-md top-1/4 left-1/4 w-1/2 h-1/4 pointer-events-none"></div> */}
             </div>
           )}
 
@@ -165,17 +172,7 @@ function SimScreen() {
       </div>
 
       {/* Bottom Navigation */}
-      <div className="flex justify-around w-full max-w-sm mt-8">
-        <button className="text-blue-600 font-semibold border-b-2 border-blue-600 pb-1">
-          SIM
-        </button>
-        <button className="text-gray-500 hover:text-blue-600 transition">
-          MAPPING
-        </button>
-        <button className="text-gray-500 hover:text-blue-600 transition">
-          IMEI
-        </button>
-      </div>
+      <BottomNav />
     </div>
   );
 }

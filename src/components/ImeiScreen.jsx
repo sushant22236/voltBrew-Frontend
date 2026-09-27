@@ -1,5 +1,6 @@
 import { useState } from "react";
 import axios from "axios";
+import BottomNav from "./BottomNav";
 
 function IMEIScreen() {
   const [imeiNumber, setImeiNumber] = useState("");
@@ -46,8 +47,8 @@ function IMEIScreen() {
         <div
           className="rounded-xl flex flex-col mb-8 bg-cover bg-center"
           style={{
-            backgroundImage: `url('/map.jpg')`,
-            height: "180px",
+            backgroundImage: `url('/Wind.jpg')`,
+            height: "130px",
             width: "100%",
           }}
         >
@@ -57,33 +58,49 @@ function IMEIScreen() {
         </div>
 
         {/* Enter IMEI */}
-        <div className="bg-gray-100 rounded-xl p-6 shadow-sm">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+        <div className="bg-gray-100 mb-2 rounded-xl p-6 shadow-sm">
+          <label className="block text-xl text-center font-medium text-black mb-2">
             Enter IMEI
           </label>
           <input
             type="text"
-            placeholder="Enter IMEI Number"
+            placeholder=""
             value={imeiNumber}
             onChange={(e) => setImeiNumber(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-md mb-4 focus:ring-2 focus:ring-blue-400 outline-none"
+            className="w-full px-4 py-2 bg-white text-black border rounded-lg mb-3 focus:ring-2 focus:ring-blue-400 outline-none"
           />
 
-          {/* Camera Upload Button */}
-          <div className="flex justify-center mb-4">
-            <button className="flex flex-col items-center bg-white shadow-md border rounded-xl px-6 py-4 hover:bg-gray-50 transition">
-              <div className="w-10 h-10 bg-blue-100 flex items-center justify-center rounded-lg mb-2">
-                📷
-              </div>
-              <span className="text-gray-600 text-sm">Open Camera</span>
-            </button>
+          {/* Camera Button */}
+          <div className="flex items-center mb-3 w-full h-20 bg-white rounded-2xl border shadow-sm p-4">
+             {/* Icon box */}
+            <div className="w-14 h-14 bg-cyan-400 rounded-lg flex items-center justify-center">
+             {/* Camera Icon (SVG) */}
+             <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={2}
+              stroke="white"
+              className="w-6 h-6">
+             <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M3 7h2l2-3h10l2 3h2a2 2 0 012 2v9a2 2 0 01-2 2H3a2 2 0 01-2-2V9a2 2 0 012-2zm9 3a4 4 0 100 8 4 4 0 000-8z" />
+             </svg>
+            </div>
+
+            {/* Text */}
+            <span className="ml-7 text-gray-500 text-sm font-medium">
+               Open Camera
+            </span>
           </div>
+
 
           {/* Save Button */}
           <button
             onClick={handleSave}
             disabled={loading}
-            className="w-full bg-blue-900 text-white py-3 rounded-md font-medium hover:bg-blue-800 transition disabled:opacity-50"
+            className="w-full bg-blue-900 text-white py-3 rounded-lg font-medium hover:bg-blue-800 transition disabled:opacity-50"
           >
             {loading ? "Saving..." : "SAVE"}
           </button>
@@ -98,17 +115,7 @@ function IMEIScreen() {
       </div>
 
       {/* Bottom Navigation */}
-      <div className="flex justify-around w-full max-w-sm mt-8">
-        <button className="text-gray-500 hover:text-blue-600 transition">
-          SIM
-        </button>
-        <button className="text-gray-500 hover:text-blue-600 transition">
-          MAPPING
-        </button>
-        <button className="text-blue-600 font-semibold border-b-2 border-blue-600 pb-1">
-          IMEI
-        </button>
-      </div>
+      <BottomNav />
     </div>
   );
 }

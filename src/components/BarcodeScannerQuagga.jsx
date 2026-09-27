@@ -169,7 +169,10 @@
 // export default BarcodeScannerQuagga;
 
 
-import React, { useEffect, useRef } from "react";
+// 
+
+
+import  { useEffect, useRef } from "react";
 import Quagga from "quagga";
 
 const readers = [
@@ -177,27 +180,26 @@ const readers = [
   "ean_reader",
   "ean_8_reader",
   "upc_reader",
-  "code_39_reader"
+  "code_39_reader",
 ];
 
 const BarcodeScannerQuagga = () => {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
+  const lastDetectedRef = useRef(null);
 
   useEffect(() => {
     const video = videoRef.current;
 
-    // Start camera manually
     navigator.mediaDevices
       .getUserMedia({ video: { facingMode: "environment" } })
       .then((stream) => {
         video.srcObject = stream;
-        video.setAttribute("playsinline", true); // iOS support
+        video.setAttribute("playsinline", true);
         video.play();
       })
       .catch((err) => console.error("Camera error:", err));
 
-    // Decode every 200ms
     const interval = setInterval(() => {
       processFrame();
     }, 200);
@@ -218,10 +220,8 @@ const BarcodeScannerQuagga = () => {
     const ctx = canvas.getContext("2d");
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-    // Enhance contrast
     enhanceContrast(ctx, canvas.width, canvas.height);
 
-    // Decode from enhanced frame
     Quagga.decodeSingle(
       {
         src: canvas.toDataURL(),
@@ -231,55 +231,55 @@ const BarcodeScannerQuagga = () => {
       },
       (result) => {
         if (result?.codeResult) {
-          console.log("✅ Barcode detected:", result.codeResult.code);
-          window.alert(`Barcode detected: ${result.codeResult.code}`);
+          const code = result.codeResult.code;
+
+          // Prevent duplicate detections
+          if (lastDetectedRef.current !== code) {
+            lastDetectedRef.current = code;
+            console.log("✅ Barcode detected:", code);
+            alert(`Barcode detected: ${code}`);
+          }
         }
       }
     );
   };
 
-  // 🔹 Contrast Enhancement (keeps edges sharp)
   const enhanceContrast = (ctx, width, height) => {
     const imageData = ctx.getImageData(0, 0, width, height);
     const data = imageData.data;
 
-    const contrast = 1.5; // >1 = stronger contrast
+    const contrast = 2; // increase for higher contrast
     const intercept = 128 * (1 - contrast);
 
     for (let i = 0; i < data.length; i += 4) {
-      // Weighted grayscale
-      let gray =
-        0.3 * data[i] + 0.59 * data[i + 1] + 0.11 * data[i + 2];
-
-      // Contrast stretch
+      let gray = 0.3 * data[i] + 0.59 * data[i + 1] + 0.11 * data[i + 2];
       gray = gray * contrast + intercept;
       gray = Math.max(0, Math.min(255, gray));
-
       data[i] = data[i + 1] = data[i + 2] = gray;
     }
 
     ctx.putImageData(imageData, 0, 0);
   };
+  console.log("Rendering BarcodeScannerQuagga");
+return (
+  <div>
+    <h1>Barcode Scanner (Canvas + Quagga)</h1>
+    
+    {/* Keep video hidden, we only use it as a source */}
+    <video
+      ref={videoRef}
+      style={{ display: "none" }}
+    />
 
-  return (
-    <div>
-      <h1>Barcode Scanner (Canvas + Quagga)</h1>
-
-      {/* Live video feed */}
-      <video
-        ref={videoRef}
-        style={{ width: "100%", maxWidth: "640px" }}
-      />
-
-      {/* Hidden canvas for processing */}
-      <canvas
-        ref={canvasRef}
-        width={640}
-        height={480}
-        style={{ display: "none" }}
-      />
-    </div>
-  );
+    {/* Show processed output */}
+    <canvas
+      ref={canvasRef}
+      width={640}
+      height={1080}
+      style={{ width: "100%", maxWidth: "640px", border: "1px solid black" }}
+    />
+  </div>
+);
 };
 
 export default BarcodeScannerQuagga;

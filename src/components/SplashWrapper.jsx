@@ -4,16 +4,16 @@ import SplashScreen from "./SplashScreen";
 
 export default function SplashWrapper() {
   const [showSplash, setShowSplash] = useState(true);
-  //const navigate = useNavigate();
+  const navigate = useNavigate();
 
-  // useEffect(() => {
-  //   const timer = setTimeout(() => {
-  //     setShowSplash(false);
-  //     navigate("/login", { replace: true }); // move to login
-  //   }, 3000); // splash duration (3 sec)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowSplash(false);
+      navigate("/login", { replace: true }); // move to login
+    }, 3000); // splash duration (3 sec)
 
-  //   return () => clearTimeout(timer);
-  // }, [navigate]);
+    return () => clearTimeout(timer);
+  }, [navigate]);
 
   return (
     <div

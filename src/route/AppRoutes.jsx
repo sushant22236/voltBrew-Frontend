@@ -5,11 +5,25 @@ import OtpScreen from "../components/OtpScreen";
 import SimScreen from "../components/SimScreen";
 import MappingScreen from "../components/MappingScreen";
 import ImeiScreen from "../components/ImeiScreen";
+import ProtectedRoute from "./ProtectedRoute";
+import { useState, useEffect } from "react";
 import BarcodeScannerQuagga from "../components/BarcodeScannerQuagga";
-import BarcodeScannerZxing from "../components/BarcodeScannerZxing";
-import BarcodeScanner from "../components/BarcodeScanner";
+import BarcodeScannerQuaggaImage from "../components/BarcodeScannerQuaggaImage";
+import LogoutPage from "../components/LogoutPage";
+import BarcodeScannerQuaggaImageOriginal from "../components/BarcodeScannerQuaggaOriginal";
+import QrBarcodeScanner from "../components/QrBarcodeScanner";
 
 export default function AppRoutes() {
+  const [isVerified, setIsVerified] = useState(
+    () => localStorage.getItem("isVerified") === "true"
+  );
+
+  useEffect(() => {
+    localStorage.setItem("isVerified", isVerified);
+  }, [isVerified]);
+
+
+
   return (
     <Routes>
       {/* Splash Screen */}
@@ -18,22 +32,46 @@ export default function AppRoutes() {
       {/* Login Screen */}
       <Route path="/login" element={<MobileNumberInput />} />
 
-      {/* OTP Screen */}
-      <Route path="/otp" element={<OtpScreen />} />
+      {/* OTP Screen (marks user verified) */}
+      <Route
+        path="/otp"
+        element={<OtpScreen onVerify={() => setIsVerified(true)} />}
+      />
 
-      {/* SIM Screen */}
-      <Route path="/sim" element={<SimScreen />} />
+      <Route path="/scanner" element={<QrBarcodeScanner />} />
+      <Route path="/scanner-image" element={<BarcodeScannerQuaggaImage />} />
+      <Route path="/scanner-og" element={<BarcodeScannerQuaggaImageOriginal />} />
 
-      {/* Mapping Screen */}
-      <Route path="/mapping" element={<MappingScreen />} />
-
-      <Route path="/imei" element={<ImeiScreen />} />
-
-      <Route path="/scanner" element={<BarcodeScannerQuagga />} />
-
-      <Route path="/scanner-2" element={<BarcodeScannerZxing />} />
-
-      <Route path="/scanner-3" element={<BarcodeScanner/>} />
+      {/* Protected Screens */}
+      <Route path="/logout" element={
+          <ProtectedRoute isVerified={isVerified}>
+            <LogoutPage />
+          </ProtectedRoute>
+      } />
+      <Route
+        path="/imei"
+        element={
+          <ProtectedRoute isVerified={isVerified}>
+            <ImeiScreen />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/sim"
+        element={
+          <ProtectedRoute isVerified={isVerified}>
+            <SimScreen />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/mapping"
+        element={
+          <ProtectedRoute isVerified={isVerified}>
+            <MappingScreen />
+          </ProtectedRoute>
+        }
+      />
     </Routes>
   );
 }
